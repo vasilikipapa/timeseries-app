@@ -3,11 +3,11 @@ logs
 *.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+# Node modules and build files
+node_modules/
 .DS_Store
 dist
 dist-ssr
@@ -27,4 +27,56 @@ coverage
 *.sln
 *.sw?
 
+# TypeScript cache
 *.tsbuildinfo
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Build output
+lib-cov
+coverage
+*.lcov
+.nyc_output
+
+# Dependency directories
+node_modules/
+jspm_packages/
+web_modules/
+
+# Yarn, npm, and pnpm cache
+.npm
+.yarn-integrity
+.pnpm-debug.log*
+.pnp.*
+
+# Environment files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# Build caches
+.cache
+.parcel-cache
+.next
+.nuxt
+.vuepress/dist
+.temp
+.docusaurus
+
+# Serverless, Snowpack, and DynamoDB Local files
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+
+# VSCode test directories
+.vscode-test
