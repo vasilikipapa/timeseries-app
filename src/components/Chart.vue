@@ -17,7 +17,6 @@ ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Title, T
 
 const rawData = ref([])
 const errorMessage = ref('')
-
 const minDate = '2024-02-01T00:00:00'
 const maxDate = '2024-02-12T23:00:00'
 
@@ -84,13 +83,21 @@ const validateDates = () => {
   }
 
   if (startDate.value < minDate || endDate.value > maxDate) {
-    errorMessage.value = `❌ Invalid date range! Please select dates between February 1st, 2024 (2024-02-01T00:00:00) and February 12th, 2024 (2024-02-12T23:00:00).`
+    errorMessage.value = ` Invalid date range! Please select dates between February 1st, 2024 (2024-02-01T00:00:00) and February 12th, 2024 (2024-02-12T23:00:00).`
   } else {
     errorMessage.value = ''
   }
 }
 
 watch([startDate, endDate], validateDates)
+
+const updateChartFromTable = (updatedData) => {
+  rawData.value = updatedData
+  chartData.value.labels = updatedData.map((entry) => entry.DateTime)
+  chartData.value.datasets.forEach((dataset) => {
+    dataset.data = updatedData.map((entry) => entry[dataset.label])
+  })
+}
 
 onMounted(async () => {
   try {
@@ -99,13 +106,15 @@ onMounted(async () => {
 
     rawData.value = data
     chartData.value.labels = data.map((entry) => entry.DateTime)
-    chartData.value.datasets[0].data = data.map((entry) => entry.ENTSOE_DE_DAM_Price)
-    chartData.value.datasets[1].data = data.map((entry) => entry.ENTSOE_GR_DAM_Price)
-    chartData.value.datasets[2].data = data.map((entry) => entry.ENTSOE_FR_DAM_Price)
+    chartData.value.datasets.forEach((dataset) => {
+      dataset.data = data.map((entry) => entry[dataset.label])
+    })
   } catch (error) {
     console.error('Error loading data:', error)
   }
 })
+
+defineExpose({ updateChartFromTable })
 </script>
 
 <template>
@@ -114,10 +123,10 @@ onMounted(async () => {
 
     <div class="filter-container">
       <label>Start Date:</label>
-      <input type="datetime-local" v-model="startDate" />
+      <input type="datetime-local" v-model="startDate" lang="en" />
 
       <label>End Date:</label>
-      <input type="datetime-local" v-model="endDate" />
+      <input type="datetime-local" v-model="endDate" lang="en" />
     </div>
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
