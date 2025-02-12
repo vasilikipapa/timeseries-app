@@ -1,30 +1,29 @@
 // eslint-disable-next-line vue/multi-word-component-names
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import {
   Chart as ChartJS,
-  BarElement,
+  LineElement,
   CategoryScale,
   LinearScale,
+  PointElement,
   Title,
   Tooltip,
   Legend,
 } from 'chart.js'
-import { Bar } from 'vue-chartjs'
+import { Line } from 'vue-chartjs'
 
-// 📌 **Καταχώρηση των modules του Chart.js**
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
+ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Title, Tooltip, Legend)
 
 const chartData = ref({
   labels: [],
   datasets: [
-    { label: 'ENTSOE_DE_DAM_Price', backgroundColor: '#42A5F5', data: [] },
-    { label: 'ENTSOE_GR_DAM_Price', backgroundColor: '#66BB6A', data: [] },
-    { label: 'ENTSOE_FR_DAM_Price', backgroundColor: '#FFA726', data: [] },
+    { label: 'ENTSOE_DE_DAM_Price', backgroundColor: '#42A5F5', borderColor: '#42A5F5', data: [] },
+    { label: 'ENTSOE_GR_DAM_Price', backgroundColor: '#66BB6A', borderColor: '#66BB6A', data: [] },
+    { label: 'ENTSOE_FR_DAM_Price', backgroundColor: '#FFA726', borderColor: '#FFA726', data: [] },
   ],
 })
 
-// 📌 **Προσθέτουμε τις επιλογές του Chart**
 const chartOptions = ref({
   responsive: true,
   maintainAspectRatio: false,
@@ -46,7 +45,19 @@ const chartOptions = ref({
   },
 })
 
-// 📌 **Ανάκτηση δεδομένων από το JSON**
+const activeSeries = ref({
+  ENTSOE_DE_DAM_Price: true,
+  ENTSOE_GR_DAM_Price: true,
+  ENTSOE_FR_DAM_Price: true,
+})
+
+const filteredChartData = computed(() => {
+  return {
+    labels: chartData.value.labels,
+    datasets: chartData.value.datasets.filter((dataset) => activeSeries.value[dataset.label]),
+  }
+})
+
 onMounted(async () => {
   try {
     const response = await fetch('/timeseries.json')
@@ -54,7 +65,6 @@ onMounted(async () => {
 
     console.log('Loaded Data:', data)
 
-    // 📌 **Ενημέρωση των δεδομένων στο γράφημα**
     chartData.value.labels = data
       .filter((_, index) => index % 20 === 0)
       .map((entry) => entry.DateTime)
@@ -67,7 +77,6 @@ onMounted(async () => {
     chartData.value = { ...chartData.value }
     console.log('After Update:', chartData.value)
 
-    // 📌 **Κάνουμε το `chartData` διαθέσιμο στην κονσόλα για debugging**
     window.chartData = chartData
     console.log('chartData added to window:', window.chartData)
   } catch (error) {
@@ -79,7 +88,19 @@ onMounted(async () => {
 <template>
   <div class="chart-container">
     <h2>Time Series Chart</h2>
-    <Bar :key="chartData.labels.length" :data="chartData" :options="chartOptions" />
+
+    <div class="checkbox-container">
+      <label v-for="(value, key) in activeSeries" :key="key">
+        <input type="checkbox" v-model="activeSeries[key]" />
+        {{ key }}
+      </label>
+    </div>
+
+    <Line
+      :key="filteredChartData.labels.length"
+      :data="filteredChartData"
+      :options="chartOptions"
+    />
   </div>
 </template>
 
@@ -91,7 +112,13 @@ onMounted(async () => {
   max-height: 500px;
   margin: auto;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+}
+
+.checkbox-container {
+  margin-bottom: 15px;
+  display: flex;
+  gap: 10px;
 }
 </style>
