@@ -12,7 +12,6 @@ import {
   Legend,
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
-import TimeSeriesTable from '@/components/TimeSeriesTable.vue'
 
 ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Title, Tooltip, Legend)
 
