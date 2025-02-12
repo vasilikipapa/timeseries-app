@@ -17,10 +17,10 @@ import Chart from './components/Chart.vue';
     </div>
   </header>
 
-  <!-- ✅ Προσθήκη του πίνακα δεδομένων -->
+
   <TimeSeriesTable />
 
-  <!-- ✅ Προσθήκη του διαγράμματος κάτω από τον πίνακα -->
+
   <Chart />
 
   <RouterView />
