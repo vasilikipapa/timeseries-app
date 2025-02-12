@@ -42,20 +42,20 @@ const updateValue = (event, index, key) => {
   timeSeriesData.value[index][key] = numericValue
 }
 
-// ✅ Αυτόματη ενημέρωση του γραφήματος κάθε φορά που αλλάζει ο πίνακας
+
 watch(
   timeSeriesData,
   (newData) => {
     console.log('🔄 Table data updated, refreshing chart...', newData)
     updateChartFromTable([...newData])
-    emit('update', [...newData]) // Εκπέμπει το νέο dataset
+    emit('update', [...newData]) 
   },
   { deep: true },
 )
 
 const saveChanges = () => {
-  console.log('✅ Changes saved!', timeSeriesData.value)
-  alert('✅ Changes saved successfully!')
+  console.log(' Changes saved!', timeSeriesData.value)
+  alert(' Changes saved successfully!')
 }
 
 const resetTable = () => {
