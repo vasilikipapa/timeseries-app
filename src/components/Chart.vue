@@ -92,7 +92,7 @@ const validateDates = () => {
 watch([startDate, endDate], validateDates)
 
 const updateChartFromTable = (updatedData) => {
-  console.log('🔄 Updating chart with new data:', updatedData)
+  console.log(' Updating chart with new data:', updatedData)
   rawData.value = updatedData
   chartData.value.labels = updatedData.map((entry) => entry.DateTime)
   chartData.value.datasets.forEach((dataset) => {
