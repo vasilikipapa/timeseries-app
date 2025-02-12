@@ -12,8 +12,11 @@ import {
   Legend,
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
+import TimeSeriesTable from '@/components/TimeSeriesTable.vue'
 
 ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Title, Tooltip, Legend)
+
+const tableComponent = ref(null)
 
 const rawData = ref([])
 const errorMessage = ref('')
@@ -22,12 +25,6 @@ const maxDate = '2024-02-12T23:00:00'
 
 const startDate = ref(null)
 const endDate = ref(null)
-
-const activeSeries = ref({
-  ENTSOE_DE_DAM_Price: true,
-  ENTSOE_GR_DAM_Price: true,
-  ENTSOE_FR_DAM_Price: true,
-})
 
 const chartData = ref({
   labels: [],
@@ -53,7 +50,6 @@ const filteredChartData = computed(() => {
     datasets: chartData.value.datasets.map((dataset) => ({
       ...dataset,
       data: filteredData.map((entry) => entry[dataset.label]),
-      hidden: !activeSeries.value[dataset.label],
     })),
   }
 })
@@ -62,6 +58,11 @@ const chartOptions = ref({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
+    legend: {
+      labels: {
+        color: 'white',
+      },
+    },
     tooltip: {
       callbacks: {
         label: function (tooltipItem) {
@@ -71,8 +72,8 @@ const chartOptions = ref({
     },
   },
   scales: {
-    x: { ticks: { autoSkip: true, maxTicksLimit: 10 } },
-    y: { beginAtZero: true },
+    x: { ticks: { autoSkip: true, maxTicksLimit: 10, color: 'white' } },
+    y: { beginAtZero: true, ticks: { color: 'white' } },
   },
 })
 
@@ -83,7 +84,7 @@ const validateDates = () => {
   }
 
   if (startDate.value < minDate || endDate.value > maxDate) {
-    errorMessage.value = ` Invalid date range! Please select dates between February 1st, 2024 (2024-02-01T00:00:00) and February 12th, 2024 (2024-02-12T23:00:00).`
+    errorMessage.value = `Invalid date range! Please select dates between February 1st, 2024 and February 12th, 2024.`
   } else {
     errorMessage.value = ''
   }
@@ -92,12 +93,23 @@ const validateDates = () => {
 watch([startDate, endDate], validateDates)
 
 const updateChartFromTable = (updatedData) => {
+  console.log('🔄 Updating chart with new data:', updatedData)
   rawData.value = updatedData
   chartData.value.labels = updatedData.map((entry) => entry.DateTime)
   chartData.value.datasets.forEach((dataset) => {
     dataset.data = updatedData.map((entry) => entry[dataset.label])
   })
 }
+
+watch(
+  () => tableComponent.value?.timeSeriesData,
+  (newData) => {
+    if (newData) {
+      updateChartFromTable(newData)
+    }
+  },
+  { deep: true },
+)
 
 onMounted(async () => {
   try {
@@ -131,12 +143,7 @@ defineExpose({ updateChartFromTable })
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-    <div class="checkbox-container">
-      <label v-for="(value, key) in activeSeries" :key="key">
-        <input type="checkbox" v-model="activeSeries[key]" />
-        {{ key }}
-      </label>
-    </div>
+    <p class="legend-instruction">Click on the legend items below to show or hide datasets.</p>
 
     <Line
       :key="filteredChartData.labels.length"
@@ -162,15 +169,17 @@ defineExpose({ updateChartFromTable })
   margin-bottom: 15px;
 }
 
-.checkbox-container {
-  margin-bottom: 10px;
-  display: flex;
-  gap: 10px;
-}
-
 .error-message {
   color: red;
   font-weight: bold;
   margin-top: 10px;
+}
+
+.legend-instruction {
+  font-size: 14px;
+  font-style: italic;
+  color: #bbb;
+  margin-bottom: 10px;
+  text-align: center;
 }
 </style>

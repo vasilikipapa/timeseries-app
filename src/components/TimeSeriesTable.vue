@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, defineEmits } from 'vue'
 import { useChart } from '@/composables/useChart'
 
 const timeSeriesData = ref([])
@@ -10,6 +10,7 @@ const MIN_VALUE = -2000
 const MAX_VALUE = 2000
 
 const { updateChartFromTable } = useChart()
+const emit = defineEmits(['update'])
 
 const loadData = async () => {
   try {
@@ -39,8 +40,22 @@ const updateValue = (event, index, key) => {
 
   errorMessage.value = null
   timeSeriesData.value[index][key] = numericValue
+}
 
-  updateChartFromTable(timeSeriesData.value)
+// ✅ Αυτόματη ενημέρωση του γραφήματος κάθε φορά που αλλάζει ο πίνακας
+watch(
+  timeSeriesData,
+  (newData) => {
+    console.log('🔄 Table data updated, refreshing chart...', newData)
+    updateChartFromTable([...newData])
+    emit('update', [...newData]) // Εκπέμπει το νέο dataset
+  },
+  { deep: true },
+)
+
+const saveChanges = () => {
+  console.log('✅ Changes saved!', timeSeriesData.value)
+  alert('✅ Changes saved successfully!')
 }
 
 const resetTable = () => {
@@ -50,9 +65,13 @@ const resetTable = () => {
 
   if (userConfirmed) {
     timeSeriesData.value = JSON.parse(JSON.stringify(originalData.value))
-    updateChartFromTable(timeSeriesData.value)
   }
 }
+
+defineExpose({
+  timeSeriesData,
+  saveChanges,
+})
 
 onMounted(loadData)
 </script>
@@ -63,6 +82,7 @@ onMounted(loadData)
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
+    <button @click="saveChanges" class="save-btn">Save Changes</button>
     <button @click="resetTable" class="reset-btn">Reset</button>
 
     <table>
@@ -136,7 +156,17 @@ input {
   margin-bottom: 10px;
 }
 
-/* 🆕 Στυλ για το κουμπί Reset */
+.save-btn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  margin-bottom: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
 .reset-btn {
   background-color: #ff4d4d;
   color: white;
@@ -146,6 +176,10 @@ input {
   font-size: 1rem;
   cursor: pointer;
   border-radius: 5px;
+}
+
+.save-btn:hover {
+  background-color: #2980b9;
 }
 
 .reset-btn:hover {
